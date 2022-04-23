@@ -8,10 +8,10 @@ pip install -r requirements.txt
 webdrivermanager firefox --linkpath /usr/local/bin
 ```
 
-Window
+Window (Chưa chạy bao giờ :)))
 ```bash
 pip install -r requirements.txt
-webdrivermanager firefox --linkpath /usr/local/bin
+webdrivermanager firefox --linkpath /path/to/folder
 ```
 
 ### Run scrapping
@@ -23,3 +23,6 @@ Ví dụ: đoạn code sau sẽ crawl các sản phẩm máy tính bảng trong 
 ```bash
 python run_scrapping.py --key "máy tính bảng" --page_start 1 --page_end 3
 ```
+Các tham số khác
+--result_file_name : Tên file csv kết quả
+--save_urls : True/False nếu True thì sẽ lưu ra file link url của các sản phẩm tìm được, mặc định là không lưu
