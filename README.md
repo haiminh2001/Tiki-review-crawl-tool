@@ -4,12 +4,16 @@ Crawl reviews từ tiki
 
 Ubuntu
 ```bash
+git clone https://github.com/haiminh2001/Tiki-review-crawl-tool.git
+cd Tiki-review-crawl-tool
 pip install -r requirements.txt
 webdrivermanager firefox --linkpath /usr/local/bin
 ```
 
 Window (Chưa chạy bao giờ :)))
 ```bash
+git clone https://github.com/haiminh2001/Tiki-review-crawl-tool.git
+cd Tiki-review-crawl-tool
 pip install -r requirements.txt
 webdrivermanager firefox --linkpath /path/to/folder
 ```
