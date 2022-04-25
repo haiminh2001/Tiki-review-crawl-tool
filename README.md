@@ -11,6 +11,8 @@ webdrivermanager firefox --linkpath /usr/local/bin
 ```
 
 Window (Chưa chạy bao giờ :)))
+
+Nếu không tải được webdriver thì tham khảo https://stackoverflow.com/questions/42524114/how-to-install-geckodriver-on-a-windows-system
 ```bash
 git clone https://github.com/haiminh2001/Tiki-review-crawl-tool.git
 cd Tiki-review-crawl-tool
