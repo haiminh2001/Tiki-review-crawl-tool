@@ -66,6 +66,7 @@ def get_reviews_from_item(driver, url) -> pd.DataFrame:
 def get_items_from_search(driver, search_str: str, page_start= 1, page_end= 1, write_to_file= True) -> list:
     print('Getting item links from tiki..........')
     result = []
+    page_end = page_end if page_end >= page_start else page_start
     search_str = search_str.replace(' ', '%20')
     for i in tqdm(range(page_start, page_end + 1)):
         page = '' if i == 1 else f'&page={i}'        
