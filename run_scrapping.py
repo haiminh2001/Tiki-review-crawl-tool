@@ -31,11 +31,11 @@ def main():
         print('Interrupted!')
     
     final_result = pd.concat(result)
-    print(f'{final_result.size} reviews have been crawled!')
+    print(f'{final_result.shape[0]} reviews have been crawled!')
     
     if not args.result_file_name.endswith('.csv'):
         args.result_file_name = args.result_file_name + '.csv'
-    args.result_file_name = args.result_file_name.replace('.csv', args.key + '.csv')
+    args.result_file_name = args.result_file_name.replace('.csv', '_' +  args.key + '.csv')
     final_result.to_csv(args.result_file_name, index= False)
     
 if __name__ == '__main__':
