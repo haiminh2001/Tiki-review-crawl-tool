@@ -24,6 +24,11 @@ def init_driver(headless= True):
     driver=webdriver.Firefox(options= options)
     return driver
 
+def simple_process(df):
+  df = df.groupby('review').mean()
+  df['rating'] = df['rating'].apply(lambda x: int(x))
+  return df.reset_index()
+
 def get_reviews_from_item(driver: webdriver.Firefox, url) -> pd.DataFrame:
     result = {'review' : [], 'rating' : []}
     driver.get(url)
@@ -41,7 +46,7 @@ def get_reviews_from_item(driver: webdriver.Firefox, url) -> pd.DataFrame:
                         if content:
                             result['review'].append(content)
                             result['rating'].append(int(rating.get('ratingValue')))
-                        
+                 
                 break
                    
         except: 

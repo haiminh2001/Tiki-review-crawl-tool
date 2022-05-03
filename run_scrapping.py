@@ -30,7 +30,7 @@ def main():
     except KeyboardInterrupt:
         print('Interrupted!')
     
-    final_result = pd.concat(result)
+    final_result = simple_process(pd.concat(result))
     print(f'{final_result.shape[0]} reviews have been crawled!')
     
     if not args.result_file_name.endswith('.csv'):
