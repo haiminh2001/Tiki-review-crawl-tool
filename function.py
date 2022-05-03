@@ -27,21 +27,12 @@ def init_driver(headless= True):
 def get_reviews_from_item(driver: webdriver.Firefox, url) -> pd.DataFrame:
     result = {'review' : [], 'rating' : []}
     driver.get(url)
-    # driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     elems = driver.find_elements(by= By.TAG_NAME, value = 'script')
     for elem in elems:
         try:
             jsonData = json.loads(elem.get_attribute('innerHTML'))
-                # print(jsonData.keys())
-                # context = jsonData.get('@context')
-                # type = jsonData.get('@type')
             graph = jsonData.get('@graph')
-                # if context:
-                #     print(context)
-                # if type:
-                #     print('type', type)
             if graph:
-                    # print('graph', graph, type(graph))
                 reviews = graph[0].get('review')
                 if reviews:
                     for review in reviews:
@@ -56,9 +47,7 @@ def get_reviews_from_item(driver: webdriver.Firefox, url) -> pd.DataFrame:
         except: 
             pass
       
-        
     return pd.DataFrame(result)
-
 
 
 def get_items_from_search(driver, search_str: str, page_start= 1, page_end= 1, write_to_file= True) -> list:
@@ -101,5 +90,3 @@ def write_links_to_file(links: list):
         f.write(last)
         f.close()
         
-# url = "https://tiki.vn/lot-chuot-pad-chuot-ben-dep-80x30-cm-hang-chinh-hang-p50253867.html?itm_campaign=SRC_YPD_TKA_PLA_UNK_ALL_UNK_UNK_UNK_UNK_X.19493_Y.148684_Z.463857_CN.Lot-80x30&itm_medium=CPC&itm_source=tiki-ads&spid=73980161"
-# print(get_reviews_from_item(init_driver(), "https://tiki.vn/lot-chuot-pad-chuot-ben-dep-80x30-cm-hang-chinh-hang-p50253867.html?itm_campaign=SRC_YPD_TKA_PLA_UNK_ALL_UNK_UNK_UNK_UNK_X.19493_Y.148684_Z.463857_CN.Lot-80x30&itm_medium=CPC&itm_source=tiki-ads&spid=73980161"))
