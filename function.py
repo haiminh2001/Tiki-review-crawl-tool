@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 import os
 from tqdm import tqdm
+import json
 def is_non_zero_file(fpath):  
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
 STAR_DICT = {
@@ -23,42 +24,39 @@ def init_driver(headless= True):
     driver=webdriver.Firefox(options= options)
     return driver
 
-def get_reviews_from_item(driver, url) -> pd.DataFrame:
+def get_reviews_from_item(driver: webdriver.Firefox, url) -> pd.DataFrame:
     result = {'review' : [], 'rating' : []}
     driver.get(url)
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-        
-    while True:
+    # driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    elems = driver.find_elements(by= By.TAG_NAME, value = 'script')
+    for elem in elems:
         try:
-            WebDriverWait(driver,5).until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, "[class='review-comment__content']")))
-        except:
+            jsonData = json.loads(elem.get_attribute('innerHTML'))
+                # print(jsonData.keys())
+                # context = jsonData.get('@context')
+                # type = jsonData.get('@type')
+            graph = jsonData.get('@graph')
+                # if context:
+                #     print(context)
+                # if type:
+                #     print('type', type)
+            if graph:
+                    # print('graph', graph, type(graph))
+                reviews = graph[0].get('review')
+                if reviews:
+                    for review in reviews:
+                        rating = review.get('reviewRating')
+                        content = review.get('reviewBody')
+                        if content:
+                            result['review'].append(content)
+                            result['rating'].append(int(rating.get('ratingValue')))
+                        
+                break
+                   
+        except: 
             pass
-        comments = driver.find_elements(by= By.CSS_SELECTOR, value= "[class='review-comment__content']")
-        ratings = driver.find_elements(by= By.CSS_SELECTOR, value= "[class='review-comment__title']")
-        assert len(comments) == len(ratings)
-        for comment, rating in zip(comments, ratings):
-            try:
-                if comment.text:
-                    result['review'].append(comment.text)
-                    result['rating'].append(STAR_DICT[rating.text])
-                
-            except:
-                pass
-        try:
-            try:
-                WebDriverWait(driver,2).until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, "[class='btn next']")))
-            except:
-                pass
-            bnt_next = driver.find_element(by= By.CSS_SELECTOR, value= "[class='btn next']")
-                
-            try:
-                bnt_next.click()
-            except:
-                pass
-        except:
-            break
-    
+      
+        
     return pd.DataFrame(result)
 
 
@@ -73,9 +71,9 @@ def get_items_from_search(driver, search_str: str, page_start= 1, page_end= 1, w
         try:
             driver.get('https://tiki.vn/search?q=' + search_str + page )
             try:
-                WebDriverWait(driver,20).until(lambda driver: not driver.title.startswith('giá'))
+                WebDriverWait(driver,10).until(lambda driver: not driver.title.startswith('giá'))
             except:
-                pass
+                continue
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             try:
                 WebDriverWait(driver,10).until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, "a.product-item")))
@@ -102,4 +100,6 @@ def write_links_to_file(links: list):
             f.write(link + '\n')
         f.write(last)
         f.close()
-
+        
+# url = "https://tiki.vn/lot-chuot-pad-chuot-ben-dep-80x30-cm-hang-chinh-hang-p50253867.html?itm_campaign=SRC_YPD_TKA_PLA_UNK_ALL_UNK_UNK_UNK_UNK_X.19493_Y.148684_Z.463857_CN.Lot-80x30&itm_medium=CPC&itm_source=tiki-ads&spid=73980161"
+# print(get_reviews_from_item(init_driver(), "https://tiki.vn/lot-chuot-pad-chuot-ben-dep-80x30-cm-hang-chinh-hang-p50253867.html?itm_campaign=SRC_YPD_TKA_PLA_UNK_ALL_UNK_UNK_UNK_UNK_X.19493_Y.148684_Z.463857_CN.Lot-80x30&itm_medium=CPC&itm_source=tiki-ads&spid=73980161"))
