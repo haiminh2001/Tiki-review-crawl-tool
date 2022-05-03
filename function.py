@@ -9,13 +9,7 @@ from tqdm import tqdm
 import json
 def is_non_zero_file(fpath):  
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
-STAR_DICT = {
-    'Rất không hài lòng' : '1',
-    'Không hài lòng' : '2',
-    'Bình thường' : '3',
-    'Hài lòng': '4',
-    'Cực kì hài lòng' : '5',
-}
+
 ITEM_LINK_FILE = 'item_links.txt'
 
 def init_driver(headless= True):
@@ -41,9 +35,9 @@ def get_reviews_from_item(driver: webdriver.Firefox, url) -> pd.DataFrame:
                 reviews = graph[0].get('review')
                 if reviews:
                     for review in reviews:
-                        rating = review.get('reviewRating')
                         content = review.get('reviewBody')
                         if content:
+                            rating = review.get('reviewRating')
                             result['review'].append(content)
                             result['rating'].append(int(rating.get('ratingValue')))
                  
