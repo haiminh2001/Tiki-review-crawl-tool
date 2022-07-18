@@ -1,4 +1,5 @@
 __pycache__
 *.csv
 item_links.txt
-geckodriver.log
+geckodriver*
+*.parquet.gzip

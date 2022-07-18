@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 
 def main():
-    default_file = str(datetime.date.today().strftime("%b-%d-%Y")).lower() + '.csv'
+    default_file = str(datetime.date.today().strftime("%b-%d-%Y")).lower() + '.parquet.gzip'
     parser = argparse.ArgumentParser()
     parser.add_argument('--key', type= str, help= 'search key for the items that we gonna crawl')
     parser.add_argument('--page_start', type= int, default= 1,help= 'page start')
@@ -33,10 +33,10 @@ def main():
     final_result = simple_process(pd.concat(result))
     print(f'{final_result.shape[0]} reviews have been crawled!')
     
-    if not args.result_file_name.endswith('.csv'):
-        args.result_file_name = args.result_file_name + '.csv'
-    args.result_file_name = args.result_file_name.replace('.csv', '_' +  args.key + '.csv')
-    final_result.to_csv(args.result_file_name, index= False)
+    if not args.result_file_name.endswith('.parquet.gzip'):
+        args.result_file_name = args.result_file_name + '.parquet.gzip'
+    args.result_file_name = args.result_file_name.replace('.parquet.gzip', '_' +  args.key + '.parquet.gzip')
+    final_result.to_parquet('tmpdata/' + args.result_file_name, index= False)
     
 if __name__ == '__main__':
     main()
