@@ -43,4 +43,4 @@ ENV HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
 ENV PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
 ENV CLASSPATH="$HADOOP_HOME/bin/hdfs classpath --glob"
 # ENV HADOOP_OPTS"-Djava.library.path=$HADOOP_HOME/lib/nativ"
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+ENTRYPOINT ["python", "/crawler/coordinator.py"]
