@@ -4,6 +4,7 @@ ENV PATH=$PATH:/usr/lib/jvm/java-11-openjdk-amd64
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 RUN export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 COPY requirements.txt /requirements.txt
+COPY run.sh /run.sh
 COPY /crawler /crawler
 RUN pip install -r requirements.txt
 RUN echo "deb http://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/debian.list
@@ -41,6 +42,6 @@ ENV HADOOP_HDFS_HOME=$HADOOP_HOME
 ENV YARN_HOME=$HADOOP_HOME
 ENV HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
 ENV PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
-ENV CLASSPATH="$HADOOP_HOME/bin/hdfs classpath --glob"
+COPY .bashrc /root/.bashrc
 # ENV HADOOP_OPTS"-Djava.library.path=$HADOOP_HOME/lib/nativ"
-ENTRYPOINT ["python", "/crawler/coordinator.py"]
+ENTRYPOINT ["bash", "/run.sh"]

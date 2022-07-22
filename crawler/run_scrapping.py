@@ -36,7 +36,7 @@ def main():
     if not args.result_file_name.endswith('.parquet.gzip'):
         args.result_file_name = args.result_file_name + '.parquet.gzip'
     args.result_file_name = args.result_file_name.replace('.parquet.gzip', '_' +  args.key + '.parquet.gzip')
-    final_result.to_parquet('tmpdata/' + args.result_file_name, index= False)
+    final_result.to_parquet('/crawler/tmpdata/' + args.result_file_name, index= False)
     
 if __name__ == '__main__':
     main()

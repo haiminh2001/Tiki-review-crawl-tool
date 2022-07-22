@@ -38,11 +38,11 @@ class RepeatedTimer(object):
 SAVER_DELAY = 0.5 * 3600
 
 def invoke_saver():
-    os.system('python saver.py') 
+    os.system('python /crawler/saver.py') 
 
 def invoke_crawler():
     for topic in TOPICS.keys():
-        os.system(f'python run_scrapping.py --key "{topic}" --page_start {TOPICS[topic][0]} --page_end {TOPICS[topic][1]}')
+        os.system(f'python /crawler/run_scrapping.py --key "{topic}" --page_start {TOPICS[topic][0]} --page_end {TOPICS[topic][1]}')
 
 def start_crawling():
     invoke_crawler()
