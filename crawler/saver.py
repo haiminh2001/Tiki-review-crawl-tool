@@ -51,11 +51,17 @@ if __name__ == '__main__':
     df, df_item = read()
     try:
         write_hdfs(df, HDFS_FOLDER)
+    except:
+        pass
+    try:
         write_hdfs(df_item, HDFS_FOLDER, HDFS_FOLDER_ITEM)
     except:
         pass
     try:
         write_es(df, INDEX)
+    except:
+        pass
+    try:
         write_es(df_item, INDEX_ITEM)
     except:
         pass
