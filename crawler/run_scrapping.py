@@ -19,24 +19,29 @@ def main():
     print(f'Found {len(item_urls)} items!')
     print('Getting reviews...')
     result = []
+    item_result = []
     try:
         for item in tqdm(item_urls):
             try:
-                new_reviews = get_reviews_from_item(driver, item)
+                new_reviews, new_item = get_reviews_from_item(driver, item)
             except:
                 continue
             else:
                 result.append(new_reviews)
+                item_result.append(new_item)
     except KeyboardInterrupt:
         print('Interrupted!')
     
     final_result = simple_process(pd.concat(result))
+    item_result = pd.concat(item_result)
+    item_result['category'] = [args.key for _ in range(item_result.shape[0])]
     print(f'{final_result.shape[0]} reviews have been crawled!')
     
     if not args.result_file_name.endswith('.parquet.gzip'):
         args.result_file_name = args.result_file_name + '.parquet.gzip'
     args.result_file_name = args.result_file_name.replace('.parquet.gzip', '_' +  args.key + '.parquet.gzip')
     final_result.to_parquet('/crawler/tmpdata/' + args.result_file_name, index= False)
+    final_result.to_parquet('/crawler/tmpdata_item/' + args.result_file_name, index= False)
     
 if __name__ == '__main__':
     main()

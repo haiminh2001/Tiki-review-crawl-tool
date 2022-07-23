@@ -25,6 +25,7 @@ def simple_process(df):
 
 def get_reviews_from_item(driver: webdriver.Firefox, url) -> pd.DataFrame:
     result = {'review' : [], 'rating' : []}
+    item_result = {}
     driver.get(url)
     elems = driver.find_elements(by= By.TAG_NAME, value = 'script')
     for elem in elems:
@@ -40,13 +41,18 @@ def get_reviews_from_item(driver: webdriver.Firefox, url) -> pd.DataFrame:
                             rating = review.get('reviewRating')
                             result['review'].append(content)
                             result['rating'].append(int(rating.get('ratingValue')))
-                 
+                item_result['brand'] = [graph[0].get('brand').get('name')]
+                item_result['item'] = [graph[0].get('name')]
+                item_result['rating_value'] = [graph[0].get('aggregateRating').get('ratingValue')]
+                item_result['review_count'] = [graph[0].get('aggregateRating').get('reviewCount')]
+                item_result['rating_value'] = [graph[0].get('aggregateRating').get('bestRating')]
+                item_result['seller'] = [graph[0].get('offers')[0].get('seller').get('name')]
+                item_result['price'] = [graph[0].get('offers')[0].get('price')]
                 break
-                   
         except: 
             pass
-      
-    return pd.DataFrame(result)
+    return pd.DataFrame(result), pd.DataFrame(item_result)
+
 
 
 def get_items_from_search(driver, search_str: str, page_start= 1, page_end= 1, write_to_file= True) -> list:

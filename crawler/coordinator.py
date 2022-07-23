@@ -45,12 +45,20 @@ def invoke_crawler():
         os.system(f'python /crawler/run_scrapping.py --key "{topic}" --page_start {TOPICS[topic][0]} --page_end {TOPICS[topic][1]}')
 
 def start_crawling():
-    invoke_crawler()
-    invoke_saver()
-
-if __name__ == '__main__':
-    rt = RepeatedTimer(SAVER_DELAY, start_crawling)
     try:
-        rt.run()
-    finally:
-        rt.stop()
+        invoke_saver()
+    except:
+        pass
+    try:
+        invoke_crawler()
+    except:
+        pass
+    
+if __name__ == '__main__':
+    # rt = RepeatedTimer(SAVER_DELAY, start_crawling)
+    # try:
+    #     rt.run()
+    # finally:
+    #     rt.stop()
+    while(True):
+        start_crawling()
