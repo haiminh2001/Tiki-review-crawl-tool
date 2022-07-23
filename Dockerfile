@@ -15,6 +15,7 @@ RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckod
 RUN tar -xzf geckodriver-v0.31.0-linux32.tar.gz
 RUN mv geckodriver /webdriver
 RUN mkdir /crawler/tmpdata
+COPY /init_data.parquet /crawler/tmpdata/init_data.parquet
 RUN rm geckodriver-v0.31.0-linux32.tar.gz
 
 RUN apt-get install -y openjdk-11-jdk && \
@@ -43,5 +44,6 @@ ENV YARN_HOME=$HADOOP_HOME
 ENV HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
 ENV PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
 COPY .bashrc /root/.bashrc
+RUN mkdir /crawler/tmpdata_item
 # ENV HADOOP_OPTS"-Djava.library.path=$HADOOP_HOME/lib/nativ"
 ENTRYPOINT ["bash", "/run.sh"]
