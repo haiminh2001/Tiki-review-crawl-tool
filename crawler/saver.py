@@ -54,7 +54,7 @@ if __name__ == '__main__':
     except:
         pass
     try:
-        write_hdfs(df_item, HDFS_FOLDER, HDFS_FOLDER_ITEM)
+        write_hdfs(df_item, HDFS_FOLDER_ITEM)
     except:
         pass
     try:
