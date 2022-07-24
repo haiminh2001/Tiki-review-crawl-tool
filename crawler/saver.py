@@ -5,6 +5,7 @@ import pyarrow.parquet as pq
 import pyarrow as pa
 from elasticsearch import Elasticsearch
 import json
+import datetime
 
 DIR_PATH = '/crawler/'
 HDFS_FOLDER = '/hadoop/dfs/data/review/'
@@ -16,7 +17,7 @@ BATCH_SIZE = 100000
 
 def rec_to_actions(df, index):
     for record in df.to_dict(orient="records"):
-        yield ('{ "index" : { "_index" : "%s", "_type" : "%s" }}'% (index, TYPE))
+        yield ('{ "index" : { "_index" : "%s", "_type" : "%s" }}'% (index + '_' +str(datetime.date.today().strftime("%b-%d-%Y")).lower(), TYPE))
         yield (json.dumps(record, default=int))
         
 def read():
@@ -50,7 +51,7 @@ def write_hdfs(df, folder):
             pass
 
 def write_es(df, index):
-    e = Elasticsearch('172.18.0.1:9200') # no args, connect to localhost:9200
+    e = Elasticsearch('dockerhost:9200') # no args, connect to localhost:9200
     for i in range(0, df.shape[0], BATCH_SIZE):
         end = min(i + BATCH_SIZE, df.shape[0])
         try:
