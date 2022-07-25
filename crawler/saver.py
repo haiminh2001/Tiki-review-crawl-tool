@@ -1,6 +1,5 @@
 import pandas as pd
 import os
-import time
 import pyarrow.parquet as pq
 import pyarrow as pa
 from elasticsearch import Elasticsearch
@@ -37,16 +36,13 @@ def read():
             os.remove(f)
     return pd.concat(result), pd.concat(result_item)
 
-def write_hdfs(df, folder):
-    file_name = str(time.ctime(time.time()).lower()) + '.parquet'
-    file_name = file_name.replace(' ', '_')
-    file_name = file_name.replace(':', '_')
+def write_hdfs(df, folder, partition_cols):
     fs = pa.fs.HadoopFileSystem('hdfs://namenode', port = 9000)
     for i in range(0, df.shape[0], BATCH_SIZE):
         end = min(i + BATCH_SIZE, df.shape[0])
         table = pa.Table.from_pandas(df.iloc[i:end])
         try:
-            pq.write_to_dataset(table, root_path= folder + file_name, filesystem=fs)
+            pq.write_to_dataset(table, root_path= folder, partition_cols = partition_cols, filesystem=fs)
         except:
             pass
 
@@ -62,11 +58,11 @@ def write_es(df, index):
 if __name__ == '__main__':
     df, df_item = read()
     try:
-        write_hdfs(df, HDFS_FOLDER)
+        write_hdfs(df, HDFS_FOLDER, ['rating'])
     except:
         pass
     try:
-        write_hdfs(df_item, HDFS_FOLDER_ITEM)
+        write_hdfs(df_item, HDFS_FOLDER_ITEM, ['category'])
     except:
         pass
     try:
