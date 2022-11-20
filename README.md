@@ -2,23 +2,19 @@ Crawl reviews từ tiki
 
 ### Install requirements
 
-Ubuntu
 ```bash
 git clone https://github.com/haiminh2001/Tiki-review-crawl-tool.git
 cd Tiki-review-crawl-tool
-pip install -r requirements.txt
-webdrivermanager firefox --linkpath /usr/local/bin
+#build docker image
+docker build -t crawler . 
 ```
-
-Window (Chưa chạy bao giờ :)))
-
-Nếu không tải được webdriver thì tham khảo https://stackoverflow.com/questions/42524114/how-to-install-geckodriver-on-a-windows-system
+Chạy docker
 ```bash
-git clone https://github.com/haiminh2001/Tiki-review-crawl-tool.git
-cd Tiki-review-crawl-tool
-pip install -r requirements.txt
-webdrivermanager firefox --linkpath /path/to/folder
+docker run -v  $PWD/crawler:/crawler -it crawler /bin/bash
+cd crawler
+python run_scrapping.py --key "máy tính bảng" --page_start 1 --page_end 3
 ```
+
 
 ### Run scrapping
 --key: Key word để search các sản phẩm trên tiki
@@ -29,6 +25,7 @@ webdrivermanager firefox --linkpath /path/to/folder
 
 Ví dụ: đoạn code sau sẽ crawl các sản phẩm máy tính bảng trong 3 trang từ trang 1 đến trang 3
 ```bash
+#start docker
 python run_scrapping.py --key "máy tính bảng" --page_start 1 --page_end 3
 ```
 Các tham số khác
