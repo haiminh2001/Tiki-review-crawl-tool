@@ -8,6 +8,8 @@ TOPICS = {
     'bàn phím': [1, 2],
     'keycap': [1, 2],
     'quạt để bàn': [1, 2],
+    'quần bò': [1,2],
+    'áo polo': [1,2],
 }
 
 class RepeatedTimer(object):
@@ -55,10 +57,6 @@ def start_crawling():
         pass
     
 if __name__ == '__main__':
-    # rt = RepeatedTimer(SAVER_DELAY, start_crawling)
-    # try:
-    #     rt.run()
-    # finally:
-    #     rt.stop()
+
     while(True):
         start_crawling()

@@ -1,11 +1,14 @@
-FROM python:3
+FROM python:3.9
 ENV PATH=$PATH:/webdriver
 ENV PATH=$PATH:/usr/lib/jvm/java-11-openjdk-amd64
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 RUN export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 COPY requirements.txt /requirements.txt
 COPY run.sh /run.sh
-COPY /crawler /crawler
+# COPY crawler /crawler
+RUN pip install --upgrade pip
+
+
 RUN pip install -r requirements.txt
 RUN echo "deb http://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/debian.list
 RUN apt-get update
@@ -14,8 +17,9 @@ RUN mkdir /webdriver
 RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux32.tar.gz 
 RUN tar -xzf geckodriver-v0.31.0-linux32.tar.gz
 RUN mv geckodriver /webdriver
-RUN mkdir /crawler/tmpdata
-COPY /init_data.parquet /crawler/tmpdata/init_data.parquet
+
+#NOTE copy data
+# COPY /init_data.parquet /crawler/tmpdata/init_data.parquet
 RUN rm geckodriver-v0.31.0-linux32.tar.gz
 
 RUN apt-get install -y openjdk-11-jdk && \
@@ -28,7 +32,6 @@ RUN apt-get update && \
     apt-get clean && \
     update-ca-certificates -f;
 
-COPY libhdfs.so /libhdfs.so
 ENV ARROW_LIBHDFS_DIR=/
 RUN export ARROW_LIBHDFS_DIR=/
 
@@ -43,7 +46,6 @@ ENV HADOOP_HDFS_HOME=$HADOOP_HOME
 ENV YARN_HOME=$HADOOP_HOME
 ENV HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
 ENV PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
-COPY .bashrc /root/.bashrc
-RUN mkdir /crawler/tmpdata_item
+# RUN mkdir /crawler/tmpdata_item
 # ENV HADOOP_OPTS"-Djava.library.path=$HADOOP_HOME/lib/nativ"
-ENTRYPOINT ["bash", "/run.sh"]
+# ENTRYPOINT ["bash", "/run.sh"]
