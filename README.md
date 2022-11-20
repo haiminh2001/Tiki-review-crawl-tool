@@ -10,8 +10,10 @@ docker build -t crawler .
 ```
 Chạy docker
 ```bash
+#start docker
 docker run -v  $PWD/crawler:/crawler -it crawler /bin/bash
 cd crawler
+#start crawling
 python run_scrapping.py --key "máy tính bảng" --page_start 1 --page_end 3
 ```
 
@@ -25,7 +27,6 @@ python run_scrapping.py --key "máy tính bảng" --page_start 1 --page_end 3
 
 Ví dụ: đoạn code sau sẽ crawl các sản phẩm máy tính bảng trong 3 trang từ trang 1 đến trang 3
 ```bash
-#start docker
 python run_scrapping.py --key "máy tính bảng" --page_start 1 --page_end 3
 ```
 Các tham số khác
