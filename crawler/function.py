@@ -1,4 +1,4 @@
-from selenium import webdriver
+from selenium  import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -7,55 +7,166 @@ import pandas as pd
 import os
 from tqdm import tqdm
 import json
+import requests
+import traceback
+
+# from urllib.parse import parse_qs, urlparse
+
 def is_non_zero_file(fpath):  
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
 
 ITEM_LINK_FILE = 'item_links.txt'
 
-def init_driver(headless= True):
-    options = Options()
-    options.headless = headless
-    driver=webdriver.Firefox(options= options)
-    return driver
+ITEM_FEATURE_COLUMNS = ['Công ty phát hành', 'Ngày xuất bản', 'Kích thước', 'Loại bìa', 'Số trang']
+
+MAX_LOOP = 1000
+class my_driver:
+    def __enter__(self, headless = True):
+        options = Options()
+        options.headless = headless
+        self.driver=webdriver.Firefox(options= options)
+        self.session = requests.Session()
+        self.update_session()
+
+        return self
+    
+    def update_session(self):
+        selenium_user_agent = self.driver.execute_script("return navigator.userAgent;")
+        self.session .headers.update({"user-agent": selenium_user_agent})
+        for cookie in self.driver.get_cookies():
+            self.session .cookies.set(cookie['name'], cookie['value'], domain=cookie['domain'])
+    
+    def __exit__(self, *args):
+        self.driver.quit()
+        
+    
 
 def simple_process(df):
-  df = df.groupby('review').mean()
-  df['rating'] = df['rating'].apply(lambda x: int(x))
-  return df.reset_index()
+    if len(df):
+        df['rating'] = df['rating'].apply(lambda x: int(x))
+    return df
 
-def get_reviews_from_item(driver: webdriver.Firefox, url) -> pd.DataFrame:
-    result = {'review' : [], 'rating' : []}
-    item_result = {}
-    driver.get(url)
-    elems = driver.find_elements(by= By.TAG_NAME, value = 'script')
-    for elem in elems:
-        try:
-            jsonData = json.loads(elem.get_attribute('innerHTML'))
-            graph = jsonData.get('@graph')
-            if graph:
-                reviews = graph[0].get('review')
-                if reviews:
-                    for review in reviews:
-                        content = review.get('reviewBody')
-                        if content:
-                            rating = review.get('reviewRating')
-                            result['review'].append(content)
-                            result['rating'].append(int(rating.get('ratingValue')))
-                item_result['brand'] = [graph[0].get('brand').get('name')]
-                item_result['item'] = [graph[0].get('name')]
-                item_result['rating_value'] = [graph[0].get('aggregateRating').get('ratingValue')]
-                item_result['review_count'] = [graph[0].get('aggregateRating').get('reviewCount')]
-                item_result['rating_value'] = [graph[0].get('aggregateRating').get('bestRating')]
-                item_result['seller'] = [graph[0].get('offers')[0].get('seller').get('name')]
-                item_result['price'] = [graph[0].get('offers')[0].get('price')]
+def get_review_page(driver, params):
+    driver.update_session()
+    res = driver.session.get('https://tiki.vn/api/v2/reviews',  params = params)
+    data = None
+    status_code = res.status_code
+    if status_code == 200:
+        data = json.loads(res.content.decode() )
+    else: 
+        print(params['product_id'], res.status_code)
+    return data, status_code
+
+
+
+    
+
+def get_review_table(driver, pid, spid):
+    review_result = {'review' : [], 'rating' : []}
+    # next_button = driver.find_element_by_css_selector('.button .c_button .s_button')
+    # while
+    item_agg = {'pid': [pid]}
+    params = {
+        'limit': 20,
+        'page': 1,
+        'spid': spid,
+        'product_id': pid,
+        'seller_id': 1,
+        'include': 'comments,contribute_info,attribute_vote_summary',
+        'sort': 'score|desc,id|desc,stars|all',
+        
+    }
+    data, status_code = get_review_page(driver, params)
+    
+    reviews, ratings = [], []
+    
+    if status_code == 200 and data:
+        
+        item_agg['rating_average'] = [data['rating_average']]
+        item_agg['reviews_count'] = [data['reviews_count']]
+        
+        
+        item_reviews = data['data']
+        reviews = [r['content'] for r in item_reviews]
+        ratings = [r['rating'] for r in item_reviews]
+        
+        num_left = item_agg['reviews_count'][-1] - len(item_reviews)
+        loop_count = 0
+        
+        get_sth = True
+        while num_left and get_sth and loop_count < MAX_LOOP:
+            params['page'] = params['page'] + 1
+            data, status_code = get_review_page(driver, params)
+            get_sth = False
+            if data and status_code == 200:
+                loop_count += 1
+                item_reviews = data['data']
+                if len(item_reviews):
+                    get_sth = True
+                
+                    reviews.extend( [r['content'] for r in item_reviews])
+                    ratings.extend( [r['rating'] for r in item_reviews])
+                    num_left -= len(item_reviews)
+            else:
                 break
-        except: 
-            pass
-    return pd.DataFrame(result), pd.DataFrame(item_result)
+
+    #remove blank reviews                
+    for i, r in enumerate(reviews):
+        if len(r):
+            review_result['review'].append(r)
+            review_result['rating'].append(ratings[i])
+    
+    
+    
+    
+    
+        
+    return review_result, item_agg
+
+
+def get_item_table(driver, item_agg):
+
+    item_result = item_agg 
+    
+
+    #detailed information
+    
+    item_result['item'] = driver.driver.find_element(by= By.CSS_SELECTOR, value = '.title').get_attribute('innerHTML')
+    
+    try:
+        item_result['price'] = int(driver.driver.find_element(by= By.CSS_SELECTOR, value = '.product-price__current-price').get_attribute('innerHTML').replace('.','').split(' ')[0])
+    except: 
+        try:
+            item_result['price'] = int(driver.driver.find_element(by= By.CSS_SELECTOR, value = '.flash-sale-price span').get_attribute('innerHTML').replace('.','').split(' ')[0])  
+        except:
+            print(traceback.format_exc())
+    table = driver.driver.find_element(by= By.CSS_SELECTOR, value = '.content.has-table').find_elements(by= By.CSS_SELECTOR, value = 'td')
+    
+    keys = [k.get_attribute('innerHTML') for k in table[::2]]
+    values = [k.get_attribute('innerHTML') for k in table[1::2]]
+    table_features = dict(zip(keys, values))
+    for f in ITEM_FEATURE_COLUMNS:
+        item_result[f] = table_features.get(f)
+    
+    return item_result
+ 
+
+def get_item_data(driver: my_driver, url) -> pd.DataFrame:
+    
+
+    driver.driver.get(url)
+    spid = int(url.split('spid=')[-1])
+    pid = url.split('.html')[0].split('-p')[-1]
+    
+    review_result, item_agg = get_review_table(driver, pid, spid)
+
+    item_result = get_item_table(driver, item_agg)
+    
+    return pd.DataFrame(review_result), pd.DataFrame(item_result)
 
 
 
-def get_items_from_search(driver, search_str: str, page_start= 1, page_end= 1, write_to_file= True) -> list:
+def get_items_from_search(driver: my_driver, search_str: str, page_start= 1, page_end= 1, write_to_file= True) -> list:
     print('Getting item links from tiki..........')
     result = []
     page_end = page_end if page_end >= page_start else page_start
@@ -63,23 +174,30 @@ def get_items_from_search(driver, search_str: str, page_start= 1, page_end= 1, w
     for i in tqdm(range(page_start, page_end + 1)):
         page = '' if i == 1 else f'&page={i}'        
         try:
-            driver.get('https://tiki.vn/search?q=' + search_str + page )
+            driver.driver.get('https://tiki.vn/search?q=' + search_str + page )
             try:
-                WebDriverWait(driver,10).until(lambda driver: not driver.title.startswith('giá'))
+                WebDriverWait(driver,10).until(lambda driver: not driver.driver.title.startswith('giá'))
             except:
                 continue
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            driver.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             try:
                 WebDriverWait(driver,10).until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, "a.product-item")))
             except:
-                pass
-            items = driver.find_elements(by= By.CSS_SELECTOR, value=  "a.product-item")
+                print(traceback.format_exc())
+                    
+            items = driver.driver.find_elements(by= By.CSS_SELECTOR, value=  "a.product-item")
             
             for item in items:
-                link = item.get_attribute('href')
-                if link.startswith('https://tiki.vn'):
-                    result.append(link)
+                try:
+                    link = item.get_attribute('href')
+                    if link.startswith('https://tiki.vn'):
+                        result.append(link)
+                except:
+                    print(traceback.format_exc())
+                    continue
         except:
+            
+            print(traceback.format_exc())
             continue
         if write_to_file:
             write_links_to_file(result)
