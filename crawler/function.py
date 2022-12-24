@@ -8,7 +8,8 @@ import os
 from tqdm import tqdm
 import json
 import requests
-import traceback
+# import traceback
+from run_scrapping import my_stacktrace
 
 # from urllib.parse import parse_qs, urlparse
 
@@ -25,6 +26,7 @@ class my_driver:
         options = Options()
         options.headless = headless
         self.driver=webdriver.Firefox(options= options)
+        self.driver.set_page_load_timeout(3)
         self.session = requests.Session()
         self.update_session()
 
@@ -139,7 +141,7 @@ def get_item_table(driver, item_agg):
         try:
             item_result['price'] = int(driver.driver.find_element(by= By.CSS_SELECTOR, value = '.flash-sale-price span').get_attribute('innerHTML').replace('.','').split(' ')[0])  
         except:
-            print(traceback.format_exc())
+            print(my_stacktrace(), end = '' if os.environ['debug'] == 'n' else '\n')
     table = driver.driver.find_element(by= By.CSS_SELECTOR, value = '.content.has-table').find_elements(by= By.CSS_SELECTOR, value = 'td')
     
     keys = [k.get_attribute('innerHTML') for k in table[::2]]
@@ -176,14 +178,14 @@ def get_items_from_search(driver: my_driver, search_str: str, page_start= 1, pag
         try:
             driver.driver.get('https://tiki.vn/search?q=' + search_str + page )
             try:
-                WebDriverWait(driver,10).until(lambda driver: not driver.driver.title.startswith('giá'))
+                WebDriverWait(driver.driver,10).until(lambda driver: not driver.title.startswith('giá'))
             except:
                 continue
             driver.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             try:
-                WebDriverWait(driver,10).until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, "a.product-item")))
+                WebDriverWait(driver.driver,10).until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, "a.product-item")))
             except:
-                print(traceback.format_exc())
+                print(my_stacktrace(), end = '' if os.environ['debug'] == 'n' else '\n')
                     
             items = driver.driver.find_elements(by= By.CSS_SELECTOR, value=  "a.product-item")
             
@@ -193,11 +195,11 @@ def get_items_from_search(driver: my_driver, search_str: str, page_start= 1, pag
                     if link.startswith('https://tiki.vn'):
                         result.append(link)
                 except:
-                    print(traceback.format_exc())
+                    print(my_stacktrace(), end = '' if os.environ['debug'] == 'n' else '\n')
                     continue
         except:
             
-            print(traceback.format_exc())
+            print(my_stacktrace(), end = '' if os.environ['debug'] == 'n' else '\n')
             continue
         if write_to_file:
             write_links_to_file(result)

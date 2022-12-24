@@ -1,17 +1,21 @@
 import os
+from threading import Timer
 import argparse
 
-from threading import Timer
-
-
 TOPICS = {
-    'ô tô': [1, 2],
-    'ghế công thái học': [1, 2],
-    'bàn phím': [1, 2],
-    'keycap': [1, 2],
-    'quạt để bàn': [1, 2],
-    'quần bò': [1,2],
-    'áo polo': [1,2],
+    'sách': [1, 2],
+    'sách tiếng việt': [1, 2],
+    'sách kĩ năng sống': [1, 2],
+    'sách tiếng anh': [1, 2],
+    'sách nhật bản': [1, 2],
+    'sách tư duy': [1,2],
+    'sách văn học': [1,2],
+    'sách kinh tế': [1,2],
+    'sách tiểu thuyết': [1,2],
+    'truyện tranh': [1,2],
+    'sách giáo khoa': [1,2],
+    'sách chính trị': [1,2],
+    'sách thiếu nhi': [1,2],
 }
 
 class RepeatedTimer(object):
@@ -46,7 +50,7 @@ def invoke_saver():
 
 def invoke_crawler():
     for topic in TOPICS.keys():
-        os.system(f'python /crawler/run_scrapping.py --key "{topic}" --page_start {TOPICS[topic][0]} --page_end {TOPICS[topic][1]}')
+        os.system(f'python /crawler/run_scrapping.py --key "{topic}" --page_start {TOPICS[topic][0]} --page_end {TOPICS[topic][1]}') 
 
 def start_crawling():
     # try:
@@ -54,11 +58,23 @@ def start_crawling():
     # except:
     #     pass
     try:
-        invoke_crawler()
+        try:
+            invoke_crawler()
+        except KeyboardInterrupt:
+            return False
     except:
-        pass
+        return False
+    return True
+    
+    
     
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('--debug', action = 'store_true', help= 'log bug')
+    args = parser.parse_args()
+    os.environ['debug'] = 'y' if args.debug else 'n'
 
-    while(True):
-        start_crawling()
+
+    while(start_crawling()):
+        pass
