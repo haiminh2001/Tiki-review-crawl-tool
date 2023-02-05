@@ -14,9 +14,10 @@ Chạy docker
 docker run -v  $PWD/crawler:/crawler -it crawler /bin/bash
 cd crawler
 #start crawling
-python run_scrapping.py --key "máy tính bảng" --page_start 1 --page_end 3
+python coordinator.py
 ```
 
+#Test purpose
 
 ### Run scrapping
 --key: Key word để search các sản phẩm trên tiki
